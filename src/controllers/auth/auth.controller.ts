@@ -2,21 +2,20 @@ import { NextFunction, Request, Response } from "express";
 import { Controller, Post } from "../../decorators/router.decorators";
 import { UserModel } from "../../models/user/user.model";
 import { compareHashString, hashString, jwtGenerator } from "../../modules/utils";
-import { findUser } from "../../types/user.types";
+import { IUser } from "../../types/user.types";
+import { RegisterDTO } from "./auth.dto";
+import { plainToClass } from "class-transformer";
+import { AuthService } from "./auth.service";
+const authService: AuthService = new AuthService();
 @Controller("/auth")
 export class AuthController {
   @Post()
   async register(req: Request, res: Response, next: NextFunction) {
     try {
-      const { username, fullName, password } = req.body;
-      const newPassword = hashString(password);
-      const checkExistUser = await UserModel.findOne({ username });
-      if (checkExistUser) throw { status: 400, message: "این کاربر از قبل موجود می باشد" };
-      const user = await UserModel.create({
-        username,
-        password: newPassword,
-        fullName,
+      const registerDto: RegisterDTO = plainToClass(RegisterDTO, req.body, {
+        excludeExtraneousValues: true,
       });
+      const user: IUser = await authService.register(registerDto);
       return res.send(user);
     } catch (err) {
       next(err);
@@ -26,7 +25,7 @@ export class AuthController {
   async login(req: Request, res: Response, next: NextFunction) {
     try {
       const { username, password } = req.body;
-      const checkExistUser: findUser = await UserModel.findOne({ username });
+      const checkExistUser: IUser | null = await UserModel.findOne({ username });
       if (!checkExistUser) throw { status: 401, message: "کاربر و یا پسوورد صحیح نمی باشد" };
       const isUser: boolean = compareHashString(password, checkExistUser.password);
       if (!isUser) throw { status: 401, message: "کاربر و یا پسوورد صحیح نمی باشد" };
