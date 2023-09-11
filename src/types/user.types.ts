@@ -1,6 +1,6 @@
-import { ObjectId } from "mongoose";
+import { Document } from "mongoose";
 
-export interface IUser {
+export interface IUser extends Document {
   fullName: string;
   username: string;
   password: string;
@@ -9,5 +9,3 @@ export interface IUser {
   mobile?: string;
   avatar?: string;
 }
-
-export type findUser = (IUser & { _id: ObjectId }) | null;
