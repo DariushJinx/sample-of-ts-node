@@ -26,3 +26,11 @@ export async function jwtGenerator(payload: jwtGeneratorPayloadDTO): Promise<voi
     }
   });
 }
+
+export function errorHandler(errors: any[]) {
+  let errorTexts: string[] = [];
+  for (const errorItem of errors) {
+    errorTexts = errorTexts.concat(errorItem.constraints);
+  }
+  return errorTexts;
+}
